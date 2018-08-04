@@ -13,6 +13,12 @@
 
 
 int main(int argc, char** argv) {
+	if (argc < 4)
+	{
+		fprintf(stderr, "Usage: << logveri a b c >> where a,b,c are integers\n");
+		exit(EXIT_FAILURE);
+	}
+
 	using namespace CryptoPP;
 	using std::string;
 
@@ -24,12 +30,27 @@ int main(int argc, char** argv) {
 		publicKey.BERDecode(input);
 	}
 
-
 	int blockNumber = 1;
-	int a = atoi(argv[1]);
-	int b = atoi(argv[2]);
-	int c = atoi(argv[3]);
-	const int leng = 5+b+(b/a)+(2*(b/c));
+	//initialize parameter by using the argv command line arguments
+	errno = 0;
+	char *pEnd;
+	long a = strtol(argv[1],&pEnd,10);
+	if (pEnd == argv[1] || *pEnd != '\0' || ((a == LONG_MIN || a == LONG_MAX) && errno == ERANGE)){
+		fprintf(stderr, "Could not convert '%s' to long and leftover string is: '%s'\n", argv[1], pEnd);
+		exit(EXIT_FAILURE);
+	}
+	long b = strtol(argv[2],&pEnd,10);
+	if (pEnd == argv[2] || *pEnd != '\0' || ((b == LONG_MIN || b == LONG_MAX) && errno == ERANGE)){
+		fprintf(stderr, "Could not convert '%s' to long and leftover string is: '%s'\n", argv[2], pEnd);
+		exit(EXIT_FAILURE);
+	}
+	long c = strtol(argv[3],&pEnd,10);
+	if (pEnd == argv[3] || *pEnd != '\0' || ((c == LONG_MIN || c == LONG_MAX) && errno == ERANGE)){
+		fprintf(stderr, "Could not convert '%s' to long and leftover string is: '%s'\n", argv[3], pEnd);
+		exit(EXIT_FAILURE);
+	}
+
+	const long leng = 5+b+(b/a)+(2*(b/c));
 	std::ifstream input("output.txt");
 
 
@@ -37,14 +58,14 @@ int main(int argc, char** argv) {
 		int readLines = 0;
 		std::vector<string> lines;
 
-		//read one block
+		//read one full block of size leng
 		while(readLines < leng){
 			string line;
 			if(std::getline(input, line)){
 				lines.push_back(line);
 				readLines++;
 			}
-			else{ // no line read
+			else{ // no line read or no full block (truncation)
 				std::cout << "Verified until logmessage nr. " << (blockNumber-1)*b<< std::endl;
 				exit(EXIT_SUCCESS);
 			}
@@ -108,12 +129,12 @@ int main(int argc, char** argv) {
 					)
 				);
 
-				std::cout <<  "Verirfying signature of authenticaction block " << (blockNumber-1)*(b/a)+j+1 << std::endl;
+				std::cout <<  "Verirfying signature of authenticaction block ranging from message " << ((blockNumber-1)*(b/a)+j)*a+1<< " to " << ((blockNumber-1)*(b/a)+j+1)*a << std::endl;
 				if(result){
-					std::cout <<  " -> Auth verified" << std::endl;
+					std::cout <<  " -> Authenticity verified" << std::endl;
 				}
 				else{
-					std::cout << " -> Auth NOT verified, messages authentic until block " << ((blockNumber-1)*(b/a)+j)<< std::endl;
+					std::cout << " -> Authenticity NOT verified, messages authentic until message " << ((blockNumber-1)*(b/a)+j)*a<< "!" << std::endl;
 					exit(EXIT_FAILURE);
 				}
 
@@ -148,7 +169,7 @@ int main(int argc, char** argv) {
 				publicKey = newkey;
 			}
 			else{
-				std::cout <<  " ->Key NOT verified,  messages authentic until message " << (blockNumber-1)*b+c*(i+1)<< std::endl;
+				std::cout <<  " ->Key NOT verified,  messages authentic until message " << (blockNumber-1)*b+c*(i+1)<< "!" << std::endl;
 				exit(EXIT_FAILURE);
 			}
 

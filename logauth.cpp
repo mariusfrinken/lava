@@ -2,7 +2,6 @@
 #include <fstream>
 #include <cstring>
 #include <unistd.h>
-#include <ctime>
 #include <algorithm>
 
 #include "logauth.h"
@@ -17,13 +16,15 @@
 #endif
 
 #ifndef B
-#define B 4096
+#define B 64
 #endif
 
 #ifndef C
-#define C 2048
+#define C 32
 #endif
 
+/* N is the total number of events that shall be processed
+*/
 #ifndef N
 #define N 4097
 #endif
@@ -41,15 +42,6 @@ static AutoSeededRandomPool rng;
 static DSA::PublicKey pubA;
 static DSA::PrivateKey privA;
 
-
-//  This method tries to retrieve the next event.
-// When implemented correct, it should return an pointer to an event OR NULL when no event happened.
-// Here with 'new' we allocate memory, so it has to be freed later.
-
-// static event* getNextEvent(){
-// 	string line = "a simple mock event";
-// 	return new event(line);
-// }
 
 /* This method computes the Authenticator (signature) on some elements of buffer.
 */
@@ -69,7 +61,6 @@ static string computeAuth(string buffer[], int start, int end){
 }
 
 /* This method is used to signal that a timeout has happened.
-I am unsure whether this will be final as a method or if we find a better implementation.
 */
 static bool timeout(){
 	struct timespec newTime;
@@ -226,7 +217,7 @@ int main(int argc, char** argv){
 			clock_gettime(CLOCK_MONOTONIC, &start);
 		}
 
-		if(timeout()){// if timeout then write metronome message with current time
+		if(timeout()){// if timeout returns true, then write metronome message with current time
 			string output;
 			char buf[27];
 			struct timespec ts;
