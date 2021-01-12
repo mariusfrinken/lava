@@ -1,7 +1,7 @@
 # LAVA
 A Log Authentication and Verification Algorithm implemented in C++ using Cryptopp
 
-This simple program is intended as a proof of concept, demonstrating the Algorithm introduced by *Freiling, Bajramovic and Frinken* in *...*.
+This simple program is intended as a proof of concept, demonstrating the Algorithm introduced by *Bajramovic, Frinken and Freiling* in  [LAVA: Log Authentication and Verification Algorithm](https://nbn-resolving.org/urn:nbn:de:bvb:29-opus4-113269).
 
 This project consist of two separate programs:
 **The Authenticator & The Verifier**
